@@ -1,0 +1,5 @@
+{
+  "name": "AI Report Assistant for Khanh Hoa Province",
+  "description": "A web application to assist officials in Khanh Hoa province with drafting administrative reports, looking up legal documents and socio-economic targets, featuring an AI assistant powered by Gemini.",
+  "requestFramePermissions": []
+}
