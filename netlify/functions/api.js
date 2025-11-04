@@ -17,7 +17,7 @@ const getGoogleDoc = async () => {
         scopes: ['https://www.googleapis.com/auth/spreadsheets'],
     });
 
-    // ID của file Google Sheet (từ env var hoặc hardcode)
+    // ID của file Google Sheet (từ env var)
     const doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEET_ID, serviceAccountAuth);
     await doc.loadInfo(); // Tải thông tin file
     return doc;
@@ -134,8 +134,7 @@ exports.handler = async (event) => {
             case 'sync_to_google':
                 console.log("Bắt đầu đồng bộ Google Sheet...");
 
-                // 1. Lấy dữ liệu từ Neon (Ví dụ: đồng bộ bảng 'contacts')
-                // (Bạn có thể lặp lại quy trình này cho 'work_log' nếu muốn)
+                // 1. Lấy dữ liệu từ Neon (Đồng bộ bảng 'contacts')
                 const contactsToSync = await sql`SELECT * FROM contacts ORDER BY name ASC`;
                 console.log(`Đã lấy ${contactsToSync.length} liên hệ từ Neon.`);
 
@@ -146,8 +145,6 @@ exports.handler = async (event) => {
                 console.log(`Đã kết nối Google Sheet: ${doc.title}, Sheet: ${sheet.title}`);
 
                 // 3. Xóa dữ liệu cũ và thêm dữ liệu mới
-                // (Lưu ý: Đảm bảo header của Google Sheet khớp với tên cột của Neon, 
-                // ví dụ: 'id', 'name', 'organization', 'phone', 'notes')
                 await sheet.clearRows(); // Xóa các hàng cũ (giữ lại hàng tiêu đề)
                 console.log("Đã xóa các hàng cũ trong Google Sheet.");
 
