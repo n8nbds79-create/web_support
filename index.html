@@ -1,73 +1,103 @@
-
 <!DOCTYPE html>
 <html lang="vi">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Công cụ Hỗ trợ Báo cáo - tỉnh Khánh Hòa</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏢</text></svg>">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Times+New+Roman&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            fontFamily: {
-              sans: ['Roboto', 'sans-serif'],
-              serif: ['Times New Roman', 'serif'],
-            },
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Công cụ Hỗ trợ Báo cáo - tỉnh Khánh Hòa</title>
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏢</text></svg>">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Times+New+Roman&display=swap"
+    rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Roboto', 'sans-serif'],
+            serif: ['Times New Roman', 'serif'],
           },
         },
+      },
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #94a3b8;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+
+    .editor-textarea {
+      font-family: 'Times New Roman', serif;
+      font-size: 14px;
+      color: black;
+      text-align: justify;
+      line-height: 1.5;
+    }
+
+    /* Add fade-in animation */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
       }
-    </script>
-    <style>
-      body {
-        font-family: 'Roboto', sans-serif;
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
       }
-      ::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
+    }
+
+    .animate-fade-in {
+      animation: fadeIn 0.5s ease-out forwards;
+    }
+
+    /* More subtle fade-in-out for notifications */
+    @keyframes fadeInOut {
+      0% {
+        opacity: 0;
+        transform: translateY(10px);
       }
-      ::-webkit-scrollbar-track {
-        background: #f1f5f9;
+
+      15%,
+      85% {
+        opacity: 1;
+        transform: translateY(0);
       }
-      ::-webkit-scrollbar-thumb {
-        background: #94a3b8;
-        border-radius: 4px;
+
+      100% {
+        opacity: 0;
+        transform: translateY(10px);
       }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #475569;
-      }
-      .editor-textarea {
-        font-family: 'Times New Roman', serif;
-        font-size: 14px;
-        color: black;
-        text-align: justify;
-        line-height: 1.5;
-      }
-      /* Add fade-in animation */
-      @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-      }
-      .animate-fade-in {
-        animation: fadeIn 0.5s ease-out forwards;
-      }
-      /* More subtle fade-in-out for notifications */
-      @keyframes fadeInOut {
-        0% { opacity: 0; transform: translateY(10px); }
-        15%, 85% { opacity: 1; transform: translateY(0); }
-        100% { opacity: 0; transform: translateY(10px); }
-      }
-      .animate-fade-in-out {
-        animation: fadeInOut 2s ease-in-out forwards;
-      }
-    </style>
+    }
+
+    .animate-fade-in-out {
+      animation: fadeInOut 2s ease-in-out forwards;
+    }
+  </style>
   <script type="importmap">
 {
   "imports": {
@@ -77,10 +107,12 @@
   }
 }
 </script>
-<link rel="stylesheet" href="/index.css">
+  <link rel="stylesheet" href="/index.css">
 </head>
-  <body class="bg-slate-100">
-    <div id="root"></div>
+
+<body class="bg-slate-100">
+  <div id="root"></div>
   <script type="module" src="/index.tsx"></script>
 </body>
+
 </html>
