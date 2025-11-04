@@ -124,7 +124,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isCollapsed,
           iconPath={iconPaths.workLog}
           isActive={activeTab === Tab.WorkLog}
           onClick={() => setActiveTab(Tab.WorkLog)}
-          isCollapsed={islCollapsed}
+          isCollapsed={isCollapsed}  /* <-- ĐÃ SỬA LỖI (từ islCollapsed) */
         />
         <NavButton
           label="Tra cứu Văn bản"
@@ -156,7 +156,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isCollapsed,
         />
         <NavButton
           label="Danh bạ Điện tử"
-          iconPath={iconPath = { iconPaths.danhBa }
+          iconPath={iconPaths.danhBa}  /* <-- ĐÃ SỬA LỖI (xóa {iconPath = ...}) */
           isActive={activeTab === Tab.Directory}
           onClick={() => setActiveTab(Tab.Directory)}
           isCollapsed={isCollapsed}
@@ -176,7 +176,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isCollapsed,
         {/* --- BẮT ĐẦU: KHỐI ĐỒNG BỘ MỚI --- */}
         {/* Khối này sẽ tự động ẩn khi menu bị thu gọn (isCollapsed) */}
         <div className={`transition-all duration-200 ease-in-out ${isCollapsed ? 'w-0 opacity-0 h-0 overflow-hidden' : 'w-auto opacity-100 h-auto mb-3'}`}>
-          <h4 className="text-xs font-semibold text-slate-700 mb-2 whitespace-nowFap">QUẢN TRỊ DỮ LIỆU</h4>
+          <h4 className="text-xs font-semibold text-slate-700 mb-2 whitespace-nowrap">QUẢN TRỊ DỮ LIỆU</h4> {/* <-- ĐÃ SỬA LỖI (từ nowFap) */}
           <button
             onClick={handleSync}
             disabled={isSyncing}
