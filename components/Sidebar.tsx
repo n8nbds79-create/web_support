@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useState } from 'react'; // <-- ĐÃ THÊM 'useState'
 import { Tab } from '../types';
 import Icon from './Icon';
 
@@ -31,7 +30,7 @@ const NavButton: React.FC<{
 }> = ({ label, iconPath, isActive, onClick, isCollapsed }) => {
   const activeClasses = 'bg-blue-100 text-blue-700';
   const inactiveClasses = 'text-slate-600 hover:bg-slate-100';
-  
+
   return (
     <button
       onClick={onClick}
@@ -48,8 +47,49 @@ const NavButton: React.FC<{
 
 
 const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isCollapsed, setIsCollapsed, isMobileOpen }) => {
-    
-    const sidebarContainerClasses = `
+
+  // --- BẮT ĐẦU: CODE MỚI THÊM (LOGIC ĐỒNG BỘ) ---
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  const handleSync = async () => {
+    // 1. Hiển thị thông báo xác nhận
+    if (!confirm('Bạn có chắc chắn muốn đồng bộ Danh bạ từ Neon sang Google Sheet không? Việc này sẽ GHI ĐÈ dữ liệu cũ.')) {
+      return;
+    }
+
+    // 2. Bắt đầu trạng thái tải
+    setIsSyncing(true);
+
+    try {
+      // 3. Gửi request đến Netlify Function
+      const response = await fetch('/.netlify/functions/api', {
+        method: 'POST',
+        body: JSON.stringify({
+          resource: 'sync_to_google' // "Chìa khóa" để gọi logic mới
+        })
+      });
+
+      if (!response.ok) {
+        // Nếu server trả về lỗi, cố gắng đọc lỗi JSON
+        const errorData = await response.json().catch(() => ({ error: 'Server báo lỗi, không thể đọc phản hồi.' }));
+        throw new Error(errorData.error || 'Server báo lỗi không xác định.');
+      }
+
+      const result = await response.json();
+      alert(result.message || 'Đồng bộ thành công!'); // Hiển thị thông báo từ API
+
+    } catch (error: any) { // Dùng 'any' để bắt lỗi
+      console.error('Lỗi khi đồng bộ:', error);
+      alert(`Đã xảy ra lỗi: ${error.message}`);
+    } finally {
+      // 5. Kết thúc trạng thái tải (dù thành công hay thất bại)
+      setIsSyncing(false);
+    }
+  };
+  // --- KẾT THÚC: CODE MỚI THÊM (LOGIC ĐỒNG BỘ) ---
+
+
+  const sidebarContainerClasses = `
         bg-white shadow-lg flex flex-col
         transition-all duration-300 ease-in-out
         fixed inset-y-0 left-0 z-40
@@ -58,17 +98,19 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isCollapsed,
         ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}
     `;
 
-    return (
+  return (
     <aside className={sidebarContainerClasses}>
       <div className={`p-5 border-b border-slate-200 flex items-center shrink-0 h-[72px] ${isCollapsed ? 'justify-center' : 'justify-start'}`}>
-            <div className={`overflow-hidden ${isCollapsed ? 'hidden' : 'block'}`}>
-                <h1 className="text-xl font-bold text-blue-700 whitespace-nowrap">Hỗ trợ Báo cáo</h1>
-                <p className="text-sm text-slate-500 whitespace-nowrap">Tỉnh Khánh Hòa</p>
-            </div>
-            <div className={`${isCollapsed ? 'block' : 'hidden'}`}>
-                <Icon path="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z" className="w-8 h-8 text-blue-700"/>
-            </div>
+        <div className={`overflow-hidden ${isCollapsed ? 'hidden' : 'block'}`}>
+          <h1 className="text-xl font-bold text-blue-700 whitespace-nowrap">Hỗ trợ Báo cáo</h1>
+          <p className="text-sm text-slate-500 whitespace-nowrap">Tỉnh Khánh Hòa</p>
+        </div>
+        <div className={`${isCollapsed ? 'block' : 'hidden'}`}>
+          <Icon path="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z" className="w-8 h-8 text-blue-700" />
+        </div>
       </div>
+
+      {/* Đây là phần menu (flex-1), nó sẽ đẩy phần footer xuống dưới */}
       <nav className="p-3 space-y-2 flex-1 overflow-y-auto">
         <NavButton
           label="Soạn thảo Báo cáo"
@@ -127,14 +169,32 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isCollapsed,
           isCollapsed={isCollapsed}
         />
       </nav>
+
+      {/* Đây là phần footer chứa nút Thu gọn và nút Đồng bộ */}
       <div className="p-3 border-t border-slate-200 shrink-0">
-          <button 
-                onClick={() => setIsCollapsed(!isCollapsed)} 
-                className="hidden md:flex w-full items-center justify-center p-2 rounded-lg text-slate-500 hover:bg-slate-200"
-                title={isCollapsed ? 'Mở rộng menu' : 'Thu gọn menu'}
-            >
-                <Icon path={isCollapsed ? "M8.25 4.5l7.5 7.5-7.5 7.5" : "M15.75 19.5L8.25 12l7.5-7.5"} className="w-5 h-5" />
-            </button>
+
+        {/* --- BẮT ĐẦU: KHỐI ĐỒNG BỘ MỚI --- */}
+        {/* Khối này sẽ tự động ẩn khi menu bị thu gọn (isCollapsed) */}
+        <div className={`transition-all duration-200 ease-in-out ${isCollapsed ? 'w-0 opacity-0 h-0 overflow-hidden' : 'w-auto opacity-100 h-auto mb-3'}`}>
+          <h4 className="text-xs font-semibold text-slate-700 mb-2 whitespace-nowrap">QUẢN TRỊ DỮ LIỆU</h4>
+          <button
+            onClick={handleSync}
+            disabled={isSyncing}
+            className="w-full px-3 py-2 text-sm font-medium text-white bg-blue-700 rounded-md hover:bg-blue-800 disabled:bg-slate-400 disabled:cursor-not-allowed"
+          >
+            {isSyncing ? 'Đang đồng bộ...' : 'Đồng bộ Google Sheet'}
+          </button>
+        </div>
+        {/* --- KẾT THÚC: KHỐI ĐỒNG BỘ MỚI --- */}
+
+        {/* Nút Thu gọn/Mở rộng (code cũ của bạn) */}
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="hidden md:flex w-full items-center justify-center p-2 rounded-lg text-slate-500 hover:bg-slate-200"
+          title={isCollapsed ? 'Mở rộng menu' : 'Thu gọn menu'}
+        >
+          <Icon path={isCollapsed ? "M8.25 4.5l7.5 7.5-7.5 7.5" : "M15.75 19.5L8.25 12l7.5-7.5"} className="w-5 h-5" />
+        </button>
       </div>
     </aside>
   );
