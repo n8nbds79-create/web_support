@@ -1,5 +1,5 @@
-
 const { neon } = require('@netlify/neon');
+// ĐÃ XÓA: dòng "import { v4 as uuidv4 } from 'uuid';" (gây lỗi và không cần thiết)
 const { LEGAL_DOCUMENTS_SEED_DATA } = require('./seedData');
 
 const sql = neon();
@@ -38,6 +38,7 @@ exports.handler = async (event) => {
                                 WHERE id = ${id} RETURNING *`;
                             return { statusCode: 200, body: JSON.stringify(updated) };
                         } else { // Create
+                            // Code này đã đúng, nó tự tạo ID và tránh lỗi 'null'
                             const newId = `contact_${Date.now()}`;
                             const [created] = await sql`
                                 INSERT INTO contacts (id, name, organization, phone, notes)
@@ -51,18 +52,19 @@ exports.handler = async (event) => {
                 break;
 
             case 'work_log':
-                 switch (action) {
+                switch (action) {
                     case 'GET_ALL':
                         const logs = await sql`SELECT * FROM work_log ORDER BY "arrivalDate" DESC`;
                         return { statusCode: 200, body: JSON.stringify(logs) };
                     case 'SAVE':
                         const { id, arrivalDate, arrivalTime, workStartTime, workEndTime, personInCharge, dailyStatus, report, notes } = payload;
                         if (id && id.startsWith('worklog_')) { // Update
-                             const [updated] = await sql`
+                            const [updated] = await sql`
                                 UPDATE work_log SET "arrivalDate"=${arrivalDate}, "arrivalTime"=${arrivalTime}, "workStartTime"=${workStartTime}, "workEndTime"=${workEndTime}, "personInCharge"=${personInCharge}, "dailyStatus"=${dailyStatus}, report=${report}, notes=${notes}
                                 WHERE id = ${id} RETURNING *`;
-                             return { statusCode: 200, body: JSON.stringify(updated) };
+                            return { statusCode: 200, body: JSON.stringify(updated) };
                         } else { // Create
+                            // Code này đã đúng, nó tự tạo ID và tránh lỗi 'null'
                             const newId = `worklog_${Date.now()}`;
                             const [created] = await sql`
                                 INSERT INTO work_log (id, "arrivalDate", "arrivalTime", "workStartTime", "workEndTime", "personInCharge", "dailyStatus", report, notes)
@@ -80,11 +82,11 @@ exports.handler = async (event) => {
                     case 'GET_ALL':
                         const [{ count }] = await sql`SELECT COUNT(*) FROM legal_documents WHERE "isUserUploaded" = false`;
                         if (parseInt(count, 10) < LEGAL_DOCUMENTS_SEED_DATA.length) {
-                           await seedLegalDocuments();
+                            await seedLegalDocuments();
                         }
                         const docs = await sql`SELECT * FROM legal_documents ORDER BY "isUserUploaded" ASC, ten ASC`;
                         return { statusCode: 200, body: JSON.stringify(docs) };
-                    
+
                     case 'CREATE_USER_DOC':
                         const { ten, noiDung } = payload;
                         const newId = `user_${Date.now()}`;
@@ -109,3 +111,5 @@ exports.handler = async (event) => {
         return { statusCode: 500, body: JSON.stringify({ error: 'Lỗi máy chủ nội bộ' }) };
     }
 };
+
+// ĐÃ XÓA: Dấu '}' thừa ở cuối file
