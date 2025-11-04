@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@netlify/neon": "^0.1.0",
+    "google-auth-library": "^10.5.0",
+    "google-spreadsheet": "^5.0.2",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "uuid": "^13.0.0"

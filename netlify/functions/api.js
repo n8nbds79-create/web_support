@@ -1,9 +1,29 @@
 const { neon } = require('@netlify/neon');
-// ĐÃ XÓA: dòng "import { v4 as uuidv4 } from 'uuid';" (gây lỗi cú pháp)
+const { GoogleSpreadsheet } = require('google-spreadsheet');
+const { JWT } = require('google-auth-library');
 const { LEGAL_DOCUMENTS_SEED_DATA } = require('./seedData');
 
+// === BỘ KHỞI TẠO ===
+
+// 1. Khởi tạo Neon
 const sql = neon();
 
+// 2. Hàm trợ giúp để kết nối Google Sheet (cần env vars)
+const getGoogleDoc = async () => {
+    // Xác thực bằng Service Account
+    const serviceAccountAuth = new JWT({
+        email: process.env.GOOGLE_CLIENT_EMAIL,
+        key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'), // Rất quan trọng: thay thế \n
+        scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+    });
+
+    // ID của file Google Sheet (từ env var hoặc hardcode)
+    const doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEET_ID, serviceAccountAuth);
+    await doc.loadInfo(); // Tải thông tin file
+    return doc;
+};
+
+// 3. Hàm seed dữ liệu (từ file cũ)
 const seedLegalDocuments = async () => {
     console.log("Seeding legal documents...");
     for (const doc of LEGAL_DOCUMENTS_SEED_DATA) {
@@ -16,15 +36,22 @@ const seedLegalDocuments = async () => {
     console.log("Seeding complete.");
 };
 
+// === HÀM API CHÍNH ===
+
 exports.handler = async (event) => {
+    // Chỉ cho phép phương thức POST
     if (event.httpMethod !== 'POST') {
         return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
     }
 
     try {
+        // Phân tích nội dung request
         const { action, resource, payload } = JSON.parse(event.body);
 
+        // Phân luồng logic dựa trên 'resource'
         switch (resource) {
+
+            // --- LOGIC BẢNG 'contacts' (NEON) ---
             case 'contacts':
                 switch (action) {
                     case 'GET_ALL':
@@ -50,6 +77,7 @@ exports.handler = async (event) => {
                 }
                 break;
 
+            // --- LOGIC BẢNG 'work_log' (NEON) ---
             case 'work_log':
                 switch (action) {
                     case 'GET_ALL':
@@ -75,6 +103,7 @@ exports.handler = async (event) => {
                 }
                 break;
 
+            // --- LOGIC BẢNG 'legal_documents' (NEON) ---
             case 'legal_documents':
                 switch (action) {
                     case 'GET_ALL':
@@ -100,8 +129,35 @@ exports.handler = async (event) => {
                         return { statusCode: 200, body: JSON.stringify({ id: payload.id }) };
                 }
                 break;
+
+            // --- CHỨC NĂNG MỚI: ĐỒNG BỘ NEON -> GOOGLE SHEET ---
+            case 'sync_to_google':
+                console.log("Bắt đầu đồng bộ Google Sheet...");
+
+                // 1. Lấy dữ liệu từ Neon (Ví dụ: đồng bộ bảng 'contacts')
+                // (Bạn có thể lặp lại quy trình này cho 'work_log' nếu muốn)
+                const contactsToSync = await sql`SELECT * FROM contacts ORDER BY name ASC`;
+                console.log(`Đã lấy ${contactsToSync.length} liên hệ từ Neon.`);
+
+                // 2. Kết nối Google Sheet
+                const doc = await getGoogleDoc();
+                // Giả sử bạn muốn ghi vào sheet đầu tiên (gid=0)
+                const sheet = doc.sheetsByIndex[0];
+                console.log(`Đã kết nối Google Sheet: ${doc.title}, Sheet: ${sheet.title}`);
+
+                // 3. Xóa dữ liệu cũ và thêm dữ liệu mới
+                // (Lưu ý: Đảm bảo header của Google Sheet khớp với tên cột của Neon, 
+                // ví dụ: 'id', 'name', 'organization', 'phone', 'notes')
+                await sheet.clearRows(); // Xóa các hàng cũ (giữ lại hàng tiêu đề)
+                console.log("Đã xóa các hàng cũ trong Google Sheet.");
+
+                await sheet.addRows(contactsToSync); // Thêm các hàng mới
+                console.log("Đã thêm hàng mới vào Google Sheet.");
+
+                return { statusCode: 200, body: JSON.stringify({ message: `Đồng bộ ${contactsToSync.length} liên hệ thành công!` }) };
         }
 
+        // Nếu không có 'resource' nào khớp
         return { statusCode: 400, body: JSON.stringify({ error: 'Hành động hoặc tài nguyên không hợp lệ' }) };
 
     } catch (error) {
@@ -109,5 +165,3 @@ exports.handler = async (event) => {
         return { statusCode: 500, body: JSON.stringify({ error: 'Lỗi máy chủ nội bộ' }) };
     }
 };
-
-// ĐÃ XÓA: Dấu '}' thừa ở cuối file
