@@ -1,5 +1,5 @@
 const { neon } = require('@netlify/neon');
-// ĐÃ XÓA: dòng "import { v4 as uuidv4 } from 'uuid';" (gây lỗi và không cần thiết)
+// ĐÃ XÓA: dòng "import { v4 as uuidv4 } from 'uuid';" (gây lỗi cú pháp)
 const { LEGAL_DOCUMENTS_SEED_DATA } = require('./seedData');
 
 const sql = neon();
@@ -38,7 +38,6 @@ exports.handler = async (event) => {
                                 WHERE id = ${id} RETURNING *`;
                             return { statusCode: 200, body: JSON.stringify(updated) };
                         } else { // Create
-                            // Code này đã đúng, nó tự tạo ID và tránh lỗi 'null'
                             const newId = `contact_${Date.now()}`;
                             const [created] = await sql`
                                 INSERT INTO contacts (id, name, organization, phone, notes)
@@ -64,7 +63,6 @@ exports.handler = async (event) => {
                                 WHERE id = ${id} RETURNING *`;
                             return { statusCode: 200, body: JSON.stringify(updated) };
                         } else { // Create
-                            // Code này đã đúng, nó tự tạo ID và tránh lỗi 'null'
                             const newId = `worklog_${Date.now()}`;
                             const [created] = await sql`
                                 INSERT INTO work_log (id, "arrivalDate", "arrivalTime", "workStartTime", "workEndTime", "personInCharge", "dailyStatus", report, notes)
